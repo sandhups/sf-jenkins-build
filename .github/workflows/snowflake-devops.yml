@@ -1,0 +1,67 @@
+name: snowflake-devops
+
+# Controls when the action will run.
+on:
+  push:
+    branches:
+      - dev
+      - main
+    paths:
+      - 'migrations/**'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  job-prod-runner:
+    if: github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, prod-label]
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Execute SchemaChange
+        shell: cmd
+        env:
+          SF_ACCOUNT: ${{ secrets.PROD_SF_ACCOUNT }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+          SF_ROLE: ${{ secrets.SF_ROLE }}
+          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SF_DATABASE: ${{ secrets.PROD_SF_DATABASE }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD }}
+        run: |
+          echo "Listing directories"
+          dir C:\actions-runner\_work\Snowflake_CICD\Snowflake_CICD
+          dir C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Scripts
+          echo "Running schemachange"
+          echo "GITHUB_WORKSPACE: %GITHUB_WORKSPACE%"
+          C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Scripts\schemachange.exe -f "%GITHUB_WORKSPACE%\migrations" -a "%SF_ACCOUNT%" -u "%SF_USERNAME%" -r "%SF_ROLE%" -w "%SF_WAREHOUSE%" -d "%SF_DATABASE%" -c "%SF_DATABASE%.SCHEMACHANGE.CHANGE_HISTORY" --create-change-history-table 2>&1
+
+
+  job-self-hosted-runner-schema-change:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: [self-hosted, dev-label]
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Execute SchemaChange
+        shell: cmd
+        env:
+          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+          SF_ROLE: ${{ secrets.SF_ROLE }}
+          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SF_DATABASE: ${{ secrets.SF_DATABASE }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD }}
+        run: |
+          echo "Listing directories"
+          dir C:\actions-runner\_work\Snowflake_CICD\Snowflake_CICD
+          dir C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Scripts
+          echo "Running schemachange"
+          echo "GITHUB_WORKSPACE: %GITHUB_WORKSPACE%"
+          C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Scripts\schemachange.exe -f "%GITHUB_WORKSPACE%\migrations" -a "%SF_ACCOUNT%" -u "%SF_USERNAME%" -r "%SF_ROLE%" -w "%SF_WAREHOUSE%" -d "%SF_DATABASE%" -c "%SF_DATABASE%.SCHEMACHANGE.CHANGE_HISTORY" --create-change-history-table 2>&1
